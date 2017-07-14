@@ -114,6 +114,9 @@ func EncryptFile(filePath string, sourceFile string, recipients []vault.VaultRec
 
 	cmd := exec.Command("gpg", encryptArgs...)
 	cmd.Env = nil
+
+	// connect Stdin to subcommand, so that the user can input data
+	cmd.Stdin = os.Stdin
 	cmd.Stderr = logger
 	_, err := cmdExec.Output(cmd)
 

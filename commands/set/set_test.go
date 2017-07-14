@@ -108,6 +108,27 @@ func TestSet(t *testing.T) {
 				g.Assert(out).Equal("This is a test")
 			})
 
+			g.It("Should encrypt from stdin, if \"-\" is given as the second argument", func() {
+				testutils.SetTestGPGHome("bob")
+
+				v := &vault.Vaultfile{}
+				v.Recipients = []vault.VaultRecipient{
+					vault.VaultRecipient{Fingerprint: "2B13EC3B5769013E2ED29AC9643E01FBCE44E394", Name: "bob@example.com"},
+				}
+				v.Save()
+
+				c, _ := Factory()
+
+				f, err := os.Open(path.Join(testutils.GetProjectDir(), "testdata", "set_test"))
+				g.Assert(err).Equal(nil)
+				os.Stdin = f
+				c.Run([]string{"set_test", "-"})
+
+				out, err := gpg.Decrypt(path.Join(vault.GetHomeDir(), "set_test.asc"))
+				g.Assert(err == nil).IsTrue()
+				g.Assert(out).Equal("This is a test")
+			})
+
 			g.It("Should fail if Vaultfile recipients is empty", func() {
 				c, _ := Factory()
 
